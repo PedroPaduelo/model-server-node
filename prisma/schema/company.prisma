@@ -1,0 +1,44 @@
+enum STATUS {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+model Company {
+  id                        String   @id @default(uuid())
+  name                      String
+  slug                      String   @unique
+  domainsLimit              Int      @default(1) @map("domains_limit")
+  domainsUsage              Int      @default(0) @map("domains_usage")
+  userLimit                 Int      @default(10) @map("user_limit")
+  userUsage                 Int      @default(0) @map("user_usage")
+  status                    STATUS   @default(ACTIVE)
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+  ownerId                   String   @map("owner_id")
+  shouldAttachUsersByDomain Boolean  @default(false) @map("should_attach_users_by_domain")
+  defaultRoleIdInAutoJoin   String?  @map("default_role_id_in_auto_join")
+
+  owner   User           @relation(fields: [ownerId], references: [id])
+  members Member[]
+  role    Role[]
+  domains CustomDomain[]
+
+  @@map(name: "companies")
+}
+
+model Member {
+  id        String  @id @default(uuid())
+  role      Role    @relation(fields: [roleId], references: [id])
+  roleId    String
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @map("company_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([companyId, userId])
+  @@map("members")
+}

@@ -19,15 +19,9 @@ import {
   resetPassword,
 } from "@/http/routes/auth";
 
-import { createCompany } from "@/http/routes/company";
+
 import { env } from "@/lib/env";
-import { listFullCompanies } from "./http/routes/company/list-companies-by-user";
-import { createDomain } from "./http/routes/domain/create-domain";
-import { createRole } from "./http/routes/role/create-role";
-import { deleteRole } from "./http/routes/role/delete-role";
-import { getRole } from "./http/routes/role/get-role";
-import { listFullRole } from "./http/routes/role/list-full-role";
-import { updateRole } from "./http/routes/role/updata-role";
+
 import { setupSocketIO } from "./socket";
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
@@ -72,16 +66,6 @@ app.register(authenticateWithPassword);
 app.register(getProfile);
 app.register(requestPasswordRecover);
 app.register(resetPassword);
-
-app.register(createCompany);
-app.register(listFullCompanies);
-app.register(createDomain);
-
-app.register(createRole);
-app.register(getRole);
-app.register(listFullRole);
-app.register(updateRole);
-app.register(deleteRole);
 
 
 app

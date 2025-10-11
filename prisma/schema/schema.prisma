@@ -22,13 +22,8 @@ model User {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  accounts      Account[]
-  tokens        Token[]
-  ownsCompanies Company[]
-  memberOn      Member[]
-
-  roleCreatedBy Role[] @relation("ConnectRoleCreatedBy")
-  roleUpdatedBy Role[] @relation("ConnectRoleUpdatedBy")
+  accounts Account[]
+  tokens   Token[]
 
   @@index([isActive])
   @@map("users")

@@ -12,13 +12,6 @@ const authenticateWithPasswordSchema = z.object({
     fullName: z.string().nullable(),
     email: z.string().email(),
     avatarUrl: z.string().url().nullable(),
-    ownsCompanies: z.array(
-      z.object({
-        id: z.string().uuid(),
-        name: z.string(),
-        slug: z.string(),
-      })
-    ),
   }),
   token: z.string(),
 });
@@ -41,13 +34,6 @@ export async function authenticateWithPassword(app: FastifyInstance) {
               fullName: z.string().nullable(),
               email: z.string().email(),
               avatarUrl: z.string().url().nullable(),
-              ownsCompanies: z.array(
-                z.object({
-                  id: z.string().uuid(),
-                  name: z.string(),
-                  slug: z.string(),
-                })
-              ),
             }),
             token: z.string(),
           }),
@@ -64,13 +50,6 @@ export async function authenticateWithPassword(app: FastifyInstance) {
           fullName: true,
           email: true,
           avatarUrl: true,
-          ownsCompanies: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
         },
         where: {
           email,

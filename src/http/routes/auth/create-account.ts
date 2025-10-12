@@ -41,23 +41,6 @@ export const createAccount = async (app: FastifyInstance) => {
         throw new BadRequestError("User with same email already exists");
       }
 
-      const [, domain] = email.split("@");
-
-      const autoJoinCompany = await prisma.company.findFirst({
-        where: {
-          shouldAttachUsersByDomain: true,
-          domains: {
-            some: {
-              domain,
-            },
-          },
-        },
-      });
-
-      const canAssociate =
-        autoJoinCompany &&
-        autoJoinCompany.userUsage < autoJoinCompany.userLimit;
-
       const passwordHash = await hash(password, 6);
       const [firstName, ...restName] = name.split(" ");
       const lastName = restName.join(" ");
@@ -69,30 +52,8 @@ export const createAccount = async (app: FastifyInstance) => {
           lastName,
           email,
           password: passwordHash,
-          memberOn:
-            canAssociate && autoJoinCompany.defaultRoleIdInAutoJoin
-              ? {
-                  create: {
-                    companyId: autoJoinCompany.id,
-                    roleId: autoJoinCompany.defaultRoleIdInAutoJoin,
-                  },
-                }
-              : undefined,
         },
       });
-
-      if (canAssociate) {
-        await prisma.company.update({
-          where: {
-            id: autoJoinCompany.id,
-          },
-          data: {
-            userUsage: {
-              increment: 1,
-            },
-          },
-        });
-      }
 
       return reply.status(201).send();
     }

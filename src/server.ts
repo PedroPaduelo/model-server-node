@@ -61,6 +61,41 @@ app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
 });
 
+// Root route
+app.get("/", async (request, reply) => {
+  return {
+    name: "Nommand Desk - API",
+    version: "0.0.1",
+    description: "API RESTful para gerenciamento de autenticação de usuários e comunicação em tempo real",
+    documentation: `${request.protocol}://${request.hostname}:${env.PORT}/docs`,
+    endpoints: {
+      docs: "/docs",
+      health: "/health",
+      auth: {
+        createAccount: "POST /users",
+        login: "POST /sessions/password",
+        profile: "GET /profile",
+        recoverPassword: "POST /password/recover",
+        resetPassword: "POST /password/reset",
+      },
+    },
+    socket: {
+      url: `ws://${request.hostname}:${env.PORT}`,
+      events: ["join-room", "leave-room"],
+      authentication: "Required (JWT token in auth field)",
+    },
+  };
+});
+
+// Health check route
+app.get("/health", async () => {
+  return {
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  };
+});
+
 app.register(createAccount);
 app.register(authenticateWithPassword);
 app.register(getProfile);

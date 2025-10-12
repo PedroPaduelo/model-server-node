@@ -1,0 +1,220 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-11T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_create_account",
+      "parentId": "fld_auth",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "url": "{{ _.base_url }}/users",
+      "name": "Create Account",
+      "description": "Creates a new user account in the system",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securepassword123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1697000000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_authenticate",
+      "parentId": "fld_auth",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "url": "{{ _.base_url }}/sessions/password",
+      "name": "Authenticate with Password",
+      "description": "Login with email and password to get JWT token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securepassword123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1696999000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_profile",
+      "parentId": "fld_auth",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "url": "{{ _.base_url }}/profile",
+      "name": "Get Profile",
+      "description": "Get authenticated user profile information",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.jwt_token }}"
+      },
+      "metaSortKey": -1696998000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_request_password_recover",
+      "parentId": "fld_auth",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "url": "{{ _.base_url }}/password/recover",
+      "name": "Request Password Recovery",
+      "description": "Request a password recovery token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"john.doe@example.com\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1696997000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_reset_password",
+      "parentId": "fld_auth",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "url": "{{ _.base_url }}/password/reset",
+      "name": "Reset Password",
+      "description": "Reset password using recovery code",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"code\": \"recovery-token-here\",\n  \"password\": \"newSecurePassword123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1696996000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_main",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "name": "Authentication",
+      "description": "Authentication and user management endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1697000000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_main",
+      "parentId": null,
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "name": "Nommand Desk API",
+      "description": "API collection for Nommand Desk application",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_main",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3333",
+        "jwt_token": ""
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "jwt_token"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1697000000000,
+      "_type": "environment"
+    },
+    {
+      "_id": "jar_cookies",
+      "parentId": "wrk_main",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "name": "Default Jar",
+      "cookies": [],
+      "_type": "cookie_jar"
+    },
+    {
+      "_id": "spc_main",
+      "parentId": "wrk_main",
+      "modified": 1697000000000,
+      "created": 1697000000000,
+      "fileName": "Nommand Desk API",
+      "contents": "",
+      "contentType": "yaml",
+      "_type": "api_spec"
+    }
+  ]
+}

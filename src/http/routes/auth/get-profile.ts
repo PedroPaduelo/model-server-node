@@ -23,12 +23,6 @@ export async function getProfile(app: FastifyInstance) {
               fullName: z.string().nullable(),
               email: z.string().email(),
               avatarUrl: z.string().url().nullable(),
-              ownsCompanies: z.array(
-                z.object({
-                  id: z.string().uuid(),
-                  name: z.string(),
-                })
-              ),
             }),
           },
         },
@@ -42,12 +36,6 @@ export async function getProfile(app: FastifyInstance) {
             fullName: true,
             email: true,
             avatarUrl: true,
-            ownsCompanies: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
           },
           where: {
             id: userId,

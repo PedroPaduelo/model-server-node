@@ -17,6 +17,32 @@ export const auth = fastifyPlugin(async (app: FastifyInstance) => {
       }
     };
 
+    request.getCurrentUser = async () => {
+      const userId = await request.getCurrentUserId();
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          createdAt: true,
+        },
+      });
+
+      if (!user) {
+        throw new UnauthorizedError("User not found or inactive");
+      }
+
+      return user;
+    };
+
     request.getUserMembership = async (slug: string) => {
       const userId = await request.getCurrentUserId();
 
@@ -31,7 +57,7 @@ export const auth = fastifyPlugin(async (app: FastifyInstance) => {
           company: true,
           role: true,
         },
-        
+
       });
 
       if (!member) {

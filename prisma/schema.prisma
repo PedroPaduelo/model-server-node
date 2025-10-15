@@ -1,0 +1,409 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("tbl_account")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tbl_session")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("tbl_verification_token")
+}
+
+model Token {
+  id        String    @id @default(cuid())
+  type      TokenType
+  createdAt DateTime  @default(now()) @map("created_at")
+  expiresAt DateTime  @map("expires_at")
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([expiresAt])
+  @@map("tbl_token")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  fullName      String    @map("full_name")
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  dateOfBirth   DateTime? @map("date_of_birth")
+  isActive      Boolean   @default(true) @map("is_active")
+  avatarUrl     String?   @map("avatar_url")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  accounts         Account[]
+  sessions         Session[]
+  tokens           Token[]
+  projects         Project[]         @relation("ProjectOwner")
+  notifications    Notification[]
+  projectFavorites ProjectFavorite[]
+  createdTags      Tag[]             @relation("TagCreator")
+  credits          UserCredit[]
+
+  @@index([isActive])
+  @@index([createdAt])
+  @@index([email])
+  @@map("tbl_user")
+}
+
+model Project {
+  id               Int               @id @default(autoincrement())
+  name             String
+  description      String            @map("descritivo")
+  stack            String
+  notes            String?           @map("obs_about_project")
+  lastModel        String?           @map("last_model")
+  status           String            @default("Ativo")
+  priority         String            @default("Média")
+  progress         Int               @default(0)
+  isFavorite       Boolean           @default(false) @map("is_favorite")
+  color            String?
+  tags             String?
+  metadata         Json?
+  gitRepositoryUrl String?           @map("git_repository_url")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  historySummaries HistorySummary[]
+  requirements     Requirement[]
+  tasks            Task[]
+  projectFavorites ProjectFavorite[]
+  projectTags      ProjectTag[]
+  notifications    Notification[]
+  userId           String?           @map("user_id")
+  user             User?             @relation("ProjectOwner", fields: [userId], references: [id])
+
+  @@index([createdAt], name: "idx_project_created_at")
+  @@index([updatedAt], name: "idx_project_updated_at")
+  @@index([createdAt, name], name: "idx_projects_created_name")
+  @@index([status], name: "idx_project_status")
+  @@index([priority], name: "idx_project_priority")
+  @@index([isFavorite], name: "idx_project_favorite")
+  @@index([progress], name: "idx_project_progress")
+  @@index([createdAt, status], name: "idx_project_created_status")
+  @@map("tbl_project")
+}
+
+model Task {
+  id                    Int               @id @default(autoincrement())
+  title                 String
+  guidancePrompt        String            @map("guidance_prompt")
+  additionalInformation String?           @map("additional_information")
+  description           String?           @map("task_description")
+  status                String            @default("Pendente")
+  createdBy             String?           @map("created_by")
+  updatedBy             String?           @map("updated_by")
+  projectId             Int               @map("project_id")
+  result                String?           @map("result_task")
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+  requirementTasks      RequirementTask[]
+  taskTodos             TaskTodo[]
+  project               Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status, createdAt], name: "idx_tasks_project_status_created_at")
+  @@index([projectId, status, updatedAt], name: "idx_tasks_project_status_updated_at")
+  @@index([status, createdAt], name: "idx_tasks_status_created_at")
+  @@index([status, updatedAt], name: "idx_tasks_status_updated_at")
+  @@index([projectId, createdAt], name: "idx_tasks_project_id_created_at")
+  @@index([projectId, updatedAt], name: "idx_tasks_project_id_updated_at")
+  @@index([projectId], name: "idx_tasks_project_status_count")
+  @@index([createdAt], name: "idx_tasks_created_at")
+  @@index([updatedAt], name: "idx_tasks_updated_at")
+  @@map("tbl_tasks")
+}
+
+model TaskTodo {
+  id          Int      @id @default(autoincrement())
+  taskId      Int      @map("task_id")
+  description String   @map("item_description")
+  isCompleted Boolean  @default(false) @map("is_completed")
+  sequence    Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([isCompleted])
+  @@index([taskId, isCompleted])
+  @@index([sequence])
+  @@map("tbl_task_todos")
+}
+
+model Requirement {
+  id               Int               @id @default(autoincrement())
+  title            String            @map("titulo")
+  description      String            @map("descricao")
+  type             String            @map("tipo")
+  category         String?           @map("categoria")
+  priority         String            @default("Média") @map("prioridade")
+  projectId        Int               @map("project_id")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirementTasks RequirementTask[]
+
+  @@index([projectId, priority, createdAt], name: "idx_requisitos_project_priority_created")
+  @@index([projectId, createdAt], name: "idx_requisitos_project_created_at")
+  @@index([projectId, updatedAt], name: "idx_requisitos_project_updated_at")
+  @@index([createdAt], name: "idx_requisitos_created_at")
+  @@index([projectId], name: "idx_requisitos_project_count")
+  @@map("tbl_requisitos")
+}
+
+model RequirementTask {
+  id            Int         @id @default(autoincrement())
+  taskId        Int         @map("task_id")
+  requirementId Int         @map("requisito_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  requirement   Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  task          Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, requirementId])
+  @@index([requirementId], name: "idx_requisitos_tasks_requisito_id")
+  @@index([taskId], name: "idx_requisitos_tasks_task_id")
+  @@map("tbl_requisitos_tasks")
+}
+
+model HistorySummary {
+  id        Int      @id @default(autoincrement())
+  summary   String   @map("sumary")
+  projectId Int      @map("project_id")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@index([projectId, createdAt])
+  @@map("tbl_history_summary_project")
+}
+
+model ProjectFavorite {
+  id        Int      @id @default(autoincrement())
+  projectId Int      @map("project_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId], name: "idx_favorite_user_id")
+  @@index([projectId], name: "idx_favorite_project_id")
+  @@map("tbl_project_favorite")
+}
+
+model Tag {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  color       String?
+  description String?
+  createdBy   String?      @map("created_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  projectTags ProjectTag[]
+  creator     User?        @relation("TagCreator", fields: [createdBy], references: [id])
+
+  @@index([name], name: "idx_tag_name")
+  @@index([createdBy], name: "idx_tag_created_by")
+  @@map("tbl_tag")
+}
+
+model ProjectTag {
+  id        Int      @id @default(autoincrement())
+  projectId Int      @map("project_id")
+  tagId     Int      @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, tagId])
+  @@index([projectId], name: "idx_project_tag_project_id")
+  @@index([tagId], name: "idx_project_tag_tag_id")
+  @@map("tbl_project_tag")
+}
+
+model ProjectHistory {
+  id          Int      @id @default(autoincrement())
+  projectId   Int      @map("project_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    Int?     @map("entity_id")
+  oldValues   Json?    @map("old_values")
+  newValues   Json?    @map("new_values")
+  userId      String?  @map("user_id")
+  userName    String?  @map("user_name")
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([projectId, createdAt], name: "idx_history_project_created")
+  @@index([projectId, action, createdAt], name: "idx_history_project_action_created")
+  @@index([projectId, entityType, createdAt], name: "idx_history_project_entity_created")
+  @@index([userId, createdAt], name: "idx_history_user_created")
+  @@index([action], name: "idx_history_action")
+  @@index([entityType], name: "idx_history_entity_type")
+  @@index([createdAt], name: "idx_history_created_at")
+  @@index([userId], name: "idx_history_user_id")
+  @@map("tbl_project_history")
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  projectId Int?      @map("project_id")
+  userId    String    @map("user_id")
+  type      String
+  title     String
+  message   String
+  metadata  Json?
+  isRead    Boolean   @default(false) @map("is_read")
+  priority  String    @default("Média")
+  createdAt DateTime  @default(now()) @map("created_at")
+  readAt    DateTime? @map("read_at")
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt], name: "idx_notification_user_read_created")
+  @@index([userId, priority, createdAt], name: "idx_notification_user_priority_created")
+  @@index([projectId, createdAt], name: "idx_notification_project_created")
+  @@index([type, priority, createdAt], name: "idx_notification_type_priority_created")
+  @@index([userId], name: "idx_notification_user_id")
+  @@index([projectId], name: "idx_notification_project_id")
+  @@index([isRead], name: "idx_notification_is_read")
+  @@index([type], name: "idx_notification_type")
+  @@index([priority], name: "idx_notification_priority")
+  @@index([createdAt], name: "idx_notification_created_at")
+  @@map("tbl_notification")
+}
+
+model UserCredit {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  balance   Float    @default(0.0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditTransactions  CreditTransaction[]
+
+  @@unique([userId])
+  @@index([userId])
+  @@index([balance])
+  @@map("tbl_user_credits")
+}
+
+model CreditTransaction {
+  id          Int      @id @default(autoincrement())
+  userCreditId Int     @map("user_credit_id")
+  amount      Float
+  type        String   // "credit", "debit", "bonus", "refund"
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  userCredit UserCredit @relation(fields: [userCreditId], references: [id], onDelete: Cascade)
+
+  @@index([userCreditId, createdAt])
+  @@index([type])
+  @@index([createdAt])
+  @@map("tbl_credit_transactions")
+}
+
+model ArchitectConfig {
+  id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
+  name        String   @default("Arquiteto Padrão")
+  prompt      String
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([isActive])
+  @@map("tbl_architect_configs")
+}
+
+model ChatSession {
+  id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
+  title       String
+  status      String   @default("active") // "active", "archived", "completed"
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  messages ChatMessage[]
+
+  @@index([userId, status])
+  @@index([createdAt])
+  @@map("tbl_chat_sessions")
+}
+
+model ChatMessage {
+  id          Int      @id @default(autoincrement())
+  sessionId   Int      @map("session_id")
+  role        String   // "user", "assistant", "system"
+  content     String
+  metadata    Json?
+  tokensUsed  Int?     @map("tokens_used")
+  cost        Float?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@index([role])
+  @@index([createdAt])
+  @@map("tbl_chat_messages")
+}
+
+enum TokenType {
+  PASSWORD_RECOVER
+}
